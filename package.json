@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@prisma/client": "^3.11.1",
+    "connect-memcached": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.3",
+    "express-session": "^1.17.2",
+    "lodash": "^4.17.21",
+    "memcached": "^2.2.2",
+    "node-cache": "^5.1.2",
+    "prisma": "^3.11.1"
+  }
+}
