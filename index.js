@@ -96,7 +96,10 @@ app.post('/quiz_me', async (req, res) => {
             }
 
             if ((report[userQuiz.get('level') - 1]['correct_tries'] + report[userQuiz.get('level') - 1]['wrong_tries']) == 5) {
-                res.json({ result: 'fail' })
+                let totalMarks = Object.keys(report).reduce(function (previous, key) {
+                    return previous + report[key]['correct_tries'];
+                }, 0);
+                res.json({ result: 'fail', totalMarks: totalMarks })
                 return;
             }
 
@@ -116,7 +119,10 @@ app.post('/quiz_me', async (req, res) => {
                 userQuiz.set('report', report)
             }
             if ((report[1]['correct_tries'] + report[1]['wrong_tries']) == 5) {
-                res.json({ result: 'fail' })
+                let totalMarks = Object.keys(report).reduce(function (previous, key) {
+                    return previous + report[key]['correct_tries'];
+                }, 0);
+                res.json({ result: 'fail', totalMarks: totalMarks })
                 return;
             }
 
