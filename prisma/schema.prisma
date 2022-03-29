@@ -20,6 +20,7 @@ model Level {
   id Int @default(autoincrement()) @id
   level String  @db.VarChar(50) @unique
   questions Question[]
+  reports Report[]
 }
 
 model Question {
@@ -29,6 +30,7 @@ model Question {
      level_id Int
      options Option[]
      answer Answer?
+     reports Report[]
 }
 
 model Option {
@@ -45,4 +47,13 @@ model Answer {
     option Option @relation(fields: [option_id], references: [id])
     question_id Int
     option_id Int
+}
+
+model Report {
+    id Int @default(autoincrement()) @id
+    question Question @relation(fields: [question_id], references: [id])
+    level Level @relation(fields: [level_id], references: [id])
+    question_id Int
+    level_id Int
+    time_taken String
 }
