@@ -8,7 +8,6 @@ const cors = require('cors')
 const _ = require("lodash")
 const NodeCache = require("node-cache");
 const path = require("path");
-const moment = require("moment");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
@@ -69,24 +68,26 @@ let trackResult = (level_id, question_id) => {
     let currReport = {
         'level_id': level_id,
         'question_id': question_id,
-        'answered_at_min': new Date().getMinutes(),
-        'answered_at_sec': new Date().getSeconds()
+        'answered_at_time': new Date(),
     }
     let user_marks = userQuiz.get("user_marks");
-    currReport['time_taken'] = `${new Date().getMinutes() - user_marks[user_marks.length - 1].answered_at_min} : ${new Date().getSeconds() - user_marks[user_marks.length - 1].answered_at_sec}`
+    console.log(currReport.answered_at_min, user_marks[user_marks.length - 1].answered_at_min, currReport.answered_at_sec, user_marks[user_marks.length - 1].answered_at_sec)
+    // currReport['time_taken'] = `${new Date().getMinutes() - user_marks[user_marks.length - 1].answered_at_min} : ${new Date().getSeconds() - user_marks[user_marks.length - 1].answered_at_sec}`
+    currReport['time_taken'] = `${(new Date() - user_marks[user_marks.length - 1].answered_at_time)/1000}`
+    console.log(currReport['time_taken'])
     user_marks.push(currReport)
     userQuiz.set("user_marks", user_marks);
 }
 
-let clearLevelResult = (level_id) => {
-    let user_marks = userQuiz.get("user_marks");
-    for (var i = user_marks.length - 1; i >= 0; i--) {
-        if (user_marks[i] && user_marks[i].level_id == level_id) {
-            user_marks.splice(i, 1);
-        }
-    }
-    userQuiz.set("user_marks", user_marks);
-}
+// let clearLevelResult = (level_id) => {
+//     let user_marks = userQuiz.get("user_marks");
+//     for (var i = user_marks.length - 1; i >= 0; i--) {
+//         if (user_marks[i] && user_marks[i].level_id == level_id) {
+//             user_marks.splice(i, 1);
+//         }
+//     }
+//     userQuiz.set("user_marks", user_marks);
+// }
 
 app.post('/quiz_me', async (req, res) => {
     let question = {};
@@ -110,8 +111,7 @@ app.post('/quiz_me', async (req, res) => {
         userQuiz.set("user_marks", [{
             'level_id': 0,
             'question_id': 0,
-            'answered_at_min': new Date().getMinutes(),
-            'answered_at_sec': new Date().getSeconds(),
+            'answered_at_time': new Date(),
             'time_taken': 0
         }])
         userQuiz.set("report", { '1': { wrong_tries: 0, correct_tries: 0 }, '2': { wrong_tries: 0, correct_tries: 0 }, '3': { wrong_tries: 0, correct_tries: 0 } })
@@ -149,7 +149,7 @@ app.post('/quiz_me', async (req, res) => {
                 uploadResults()
                 return;
             }
-            clearLevelResult(userQuiz.get('level'))
+            trackResult(userQuiz.get('level'), req.body.question_id)
             question = await getRandomDistinctQuestionByLevel(userQuiz.get('level') - 1)
             res.json(question)
         }
@@ -159,7 +159,7 @@ app.post('/quiz_me', async (req, res) => {
             let report = userQuiz.get('report')
             report[1]['wrong_tries'] += 1
             userQuiz.set('report', report)
-            clearLevelResult(userQuiz.get('level'))
+            trackResult(1, req.body.question_id)
             if ((1 + report[1]['correct_tries'] + report[1]['wrong_tries']) == 5) {
                 res.json({ result: 'fail', totalMarks: getTotalMarks(report) })
                 uploadResults()
